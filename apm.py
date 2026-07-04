@@ -79,6 +79,7 @@ class APMMonitor:
         self.current_profile = 'Default'
         self.focus_mode = False
         self.paused = False
+        self.input_mode = 'both'
         self.pause_started_at = None
         self.session_count = 0
         self.total_active_seconds = 0
@@ -192,29 +193,35 @@ class APMMonitor:
     def stop_listeners(self):
         stop_listeners_helper(self)
 
-    def action_event(self, *args):
-        # If called from keyboard listener, args[0] may be a Key object
-        now = time.time()
-        try:
-            evt = args[0]
-        except Exception:
-            evt = None
+    def handle_input_event(self, source: str, evt=None):
+        if self.paused:
+            return
+        if self.input_mode == 'keyboard' and source != 'keyboard':
+            return
+        if self.input_mode == 'mouse' and source != 'mouse':
+            return
 
-        # handle F1: when overlay is active and mouse is over overlay, toggle overlay off
+        now = time.time()
+
         try:
-            if evt is not None and keyboard and getattr(keyboard, 'Key', None) and evt == keyboard.Key.f1:
+            if source == 'keyboard' and evt is not None and keyboard and getattr(keyboard, 'Key', None) and evt == keyboard.Key.f1:
                 if self.overlay and self.is_mouse_over_overlay():
-                    # switch overlay off to allow interaction
                     self.overlay_var.set(False)
                     self.toggle_overlay()
                     return
         except Exception:
             pass
 
-        # record generic action (mouse/keys) for APM
         self.events.append(now)
         self.total_actions += 1
         self.trim_events(now)
+
+    def action_event(self, *args):
+        try:
+            evt = args[0]
+        except Exception:
+            evt = None
+        self.handle_input_event('keyboard', evt)
 
     def compute_dpm(self):
         now = time.time()
@@ -1062,10 +1069,15 @@ class APMMonitor:
                        selectcolor=self.bg, activebackground=self.bg, activeforeground=self.fg).grid(row=8, column=0, columnspan=2,
                                                                                                    sticky="w", padx=8, pady=6)
 
-        tk.Label(overlay_frame, text="URL remote:", bg=self.bg, fg=self.fg).grid(row=9, column=0, sticky="w", padx=8, pady=6)
+        tk.Label(overlay_frame, text="Source d’APM:", bg=self.bg, fg=self.fg).grid(row=9, column=0, sticky="w", padx=8, pady=6)
+        input_mode_combo = ttk.Combobox(overlay_frame, values=['both', 'keyboard', 'mouse'], state='readonly')
+        input_mode_combo.set(self.input_mode)
+        input_mode_combo.grid(row=9, column=1, padx=8, pady=6, sticky='we')
+
+        tk.Label(overlay_frame, text="URL remote:", bg=self.bg, fg=self.fg).grid(row=10, column=0, sticky="w", padx=8, pady=6)
         remote_entry = tk.Entry(overlay_frame, bg="#1f2937", fg=self.fg, insertbackground=self.fg, width=44)
         remote_entry.insert(0, ";".join(self.remote_urls) if self.remote_urls else self.remote_url)
-        remote_entry.grid(row=9, column=1, padx=8, pady=6, sticky="we")
+        remote_entry.grid(row=10, column=1, padx=8, pady=6, sticky="we")
 
         # Alerts tab
         alert_var = tk.BooleanVar(value=self.alert_enabled)
@@ -1160,6 +1172,7 @@ class APMMonitor:
                 self.compact_mode = bool(compact_var.get())
                 self.theme = theme_combo.get() or self.theme
                 self.current_profile = profile_combo.get() or self.current_profile
+                self.input_mode = input_mode_combo.get() or self.input_mode
                 self.obs_mode = bool(obs_var.get())
                 self.streamer_mode = bool(streamer_var.get())
                 self.obs_ws_enabled = bool(obs_ws_var.get())

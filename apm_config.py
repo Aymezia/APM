@@ -13,6 +13,7 @@ def load_config(config_path, monitor):
             monitor.show_decimals = bool(data.get('show_decimals', monitor.show_decimals))
             monitor.remote_enabled = bool(data.get('remote_enabled', monitor.remote_enabled))
             monitor.current_profile = data.get('current_profile', monitor.current_profile)
+            monitor.input_mode = data.get('input_mode', monitor.input_mode)
             monitor.compact_mode = bool(data.get('compact_mode', monitor.compact_mode))
             monitor.mini_mode = bool(data.get('mini_mode', monitor.mini_mode))
             monitor.focus_mode = bool(data.get('focus_mode', monitor.focus_mode))
@@ -58,6 +59,7 @@ def save_config(config_path, monitor):
             'remote_enabled': monitor.remote_enabled,
             'remote_urls': monitor.remote_urls,
             'current_profile': monitor.current_profile,
+            'input_mode': monitor.input_mode,
             'start_minimized': monitor.start_minimized,
             'alert_enabled': monitor.alert_enabled,
             'alert_high_threshold': monitor.alert_high_threshold,
