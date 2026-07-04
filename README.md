@@ -51,33 +51,6 @@ python apm.py
 - apm_stats.py : export CSV et snapshots
 - apm_overlay.py : page HTML de l’overlay navigateur
 
-## GitHub / publication
-
-Initialiser le dépôt si nécessaire :
-
-```bash
-git init
-git add .
-git commit -m "Initial commit"
-```
-
-Ajouter votre remote GitHub :
-
-```bash
-git remote add origin https://github.com/VOTRE_UTILISATEUR/VOTRE_REPO.git
-```
-
-Envoyer les changements :
-
-```bash
-git push -u origin main
-```
-
-Si votre branche est nommée master :
-
-```bash
-git push -u origin master
-```
 
 ## Notes
 
